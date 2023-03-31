@@ -22,7 +22,7 @@ Products = pd.read_csv("./Products.csv")
 
 #To-do: Do we want a sidebar? what other features do we want to add?
 #with st.sidebar:
-option = st.selectbox('Which Table would you like to see?', ('Cancelled Orders','Online_Retail', 'Orders','Customers', 'Catalog', 'Products','Suppliers'))
+option = st.selectbox('Which Table would you like to see?', ('Cancelled Orders', 'Orders','Customers', 'Catalog', 'Products','Suppliers'))
 if option == 'Cancelled Orders':
     st.title("Cancelled Orders")
     st.write(Cancelled_orders)
