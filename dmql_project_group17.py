@@ -12,7 +12,6 @@ st.subheader("Tap here to view the data:")
 
 #Create a variable for each table. 
 Cancelled_orders = pd.read_csv("./CancelledOrders.csv")
-Online_Retail = pd.read_csv("./online_retail.csv") 
 Orders = pd.read_csv("./Orders.csv")
 Suppliers = pd.read_csv("./Suppliers.csv") 
 Customers = pd.read_csv("./Customers.csv")
