@@ -1,51 +1,64 @@
+# streamlit_app.py
+
 import streamlit as st
 import pandas as pd
-import numpy as np
-import tempfile
-import sqlite3
+import psycopg2
 
-st.title("Warehouse Data")
-#st.image('./img.jpg')
-st.markdown("""In this interactive streamlit dashboard, we have attempted to implement 
-an interactive interface for warehouse and retail managers to get quick insights on E-commerce Data.""")
-st.subheader("Tap here to view the data:")
+# Initialize connection.
+# Uses st.cache_resource to only run once.
+@st.cache_resource
+def init_connection():
+    return psycopg2.connect(**st.secrets["postgres"])
 
-#Create a variable for each table. 
-Cancelled_orders = pd.read_csv("./CancelledOrders.csv")
-Orders = pd.read_csv("./Orders.csv")
-Suppliers = pd.read_csv("./Suppliers.csv") 
-Customers = pd.read_csv("./Customers.csv")
+conn = init_connection()
 
-Catalog = pd.read_csv("./Catalog.csv") 
-Products = pd.read_csv("./Products.csv")
+def get_data(query):
+    with conn.cursor() as cur:
+        cur.execute(query)
+        data = cur.fetchall()
+        # Convert the query results to a pandas DataFrame
+        df = pd.DataFrame(data, columns=[desc[0] for desc in cur.description])
+        return df
+# Use Streamlit to display the retrieved data
+st.header("Retail Database")
+st.write("Enter a query to retrieve data from the database:")
 
-#To-do: Do we want a sidebar? what other features do we want to add?
-#with st.sidebar:
-option = st.selectbox('Which Table would you like to see?', ('Cancelled Orders', 'Orders','Customers', 'Catalog', 'Products','Suppliers'))
-if option == 'Cancelled Orders':
-    st.title("Cancelled Orders")
-    st.write(Cancelled_orders)
+query = st.text_input("Query:")
+if query:
+    df = get_data(query)
+    if not df.empty:
+        st.dataframe(df)
+    else:
+        st.write("No data found.")
+# Retrieve all table names from the database
+with conn.cursor() as cur:
+    cur.execute("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';")
+    table_names = [name[0] for name in cur.fetchall()]
 
-if option == 'Online_Retail':
-    st.title("Online Retail!")
-    st.write(Online_Retail)  
+# Display a dropdown menu with the table names
+table_name = st.selectbox("Select the table Name:", table_names)
 
-if option == 'Orders':
-    st.title("Orders")
-    st.write(Orders)
+# If a table has been selected, display the data in a dataframe
+if table_name:
+    st.write(f"Displaying data from table: {table_name}")
+    query = f"SELECT * FROM {table_name}"
+    df = get_data(query)
+    if not df.empty:
+        st.dataframe(df)
+    else:
+        st.write("No data found.")
+# Perform query.
+# Uses st.cache_data to only rerun when the query changes or after 10 min.
+# @st.cache_data(ttl=600)
+# def run_query(query):
+#     with conn.cursor() as cur:
+#         cur.execute(query)
+#         return cur.fetchall()
 
-if option == 'Customers':
-    st.title("Customers!")
-    st.write(Customers)
+# rows = run_query("SELECT * from countries;")
 
-if option == 'Products':
-    st.title("Products!")
-    st.write(Products)
+# Print results.
+# for row in rows:
+#     st.write(f"{row[0]} has a :{row[1]}:")
 
-if option == 'Catalog':
-    st.title("Catalog!")
-    st.write(Catalog)
 
-if option == 'Suppliers':
-    st.title("Suppliers")
-    st.write(Suppliers)
