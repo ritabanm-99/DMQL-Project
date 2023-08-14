@@ -1,2 +1,1 @@
-# DMQL-Project
-Group 17 Project
+# Catalog management Dashboard built using Streamlit.
